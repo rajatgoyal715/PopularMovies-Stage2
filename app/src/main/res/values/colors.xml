@@ -5,4 +5,5 @@
     <color name="colorAccent">#FF4081</color>
 
     <color name="bgColor">#dadada</color>
+    <color name="black">#000</color>
 </resources>

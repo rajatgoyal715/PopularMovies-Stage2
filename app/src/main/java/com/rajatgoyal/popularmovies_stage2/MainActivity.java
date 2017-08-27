@@ -30,6 +30,12 @@ import org.json.JSONObject;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+// TODO You’ll allow users to view and play trailers ( either in the youtube app or a web browser).
+// TODO You’ll allow users to read reviews of a selected movie.
+// TODO You’ll also allow users to mark a movie as a favorite in the details view by tapping a button(star).
+// TODO You'll create a database and content provider to store the names and ids of the user's favorite movies (and optionally, the rest of the information needed to display their favorites collection while offline).
+// TODO You’ll modify the existing sorting criteria for the main view to include an additional pivot to show their favorites collection.
+
 public class MainActivity extends AppCompatActivity implements MoviesAdapter.MovieItemClickListener {
 
     private RecyclerView rv_movies;
@@ -90,16 +96,19 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
         Context context = MainActivity.this;
         sharedPref = context.getSharedPreferences(MY_PREFS, Context.MODE_PRIVATE);
 
-        int choice = sharedPref.getInt("choice", -1);
-        POPULAR_OR_TOP_RATED = (choice == -1) ? 0 : choice;
+        POPULAR_OR_TOP_RATED = sharedPref.getInt("choice", -1);
     }
 
     private void loadMoviesData() {
 
         showLoadingIndicator();
 
-        URL moviesUrl = buildUrl();
-        new MoviesFetchTask().execute(moviesUrl);
+        if (POPULAR_OR_TOP_RATED != -1) {
+            URL moviesUrl = buildUrl();
+            new MoviesFetchTask().execute(moviesUrl);
+        } else {
+            // query the database for favourites
+        }
     }
 
     public void showLoadingIndicator() {
@@ -227,6 +236,11 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
         if (id == R.id.action_top_rated) {
             item.setChecked(true);
             POPULAR_OR_TOP_RATED = 1;
+        }
+
+        if (id == R.id.action_favourites) {
+            item.setChecked(true);
+            POPULAR_OR_TOP_RATED = -1;
         }
 
         updateSharedPref();

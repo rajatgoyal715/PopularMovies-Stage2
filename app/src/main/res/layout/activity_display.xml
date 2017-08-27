@@ -4,8 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#fff"
-    tools:context="com.rajatgoyal.popularmovies_stage2.DisplayActivity"
-    android:fillViewport="true">
+    android:fillViewport="true"
+    tools:context="com.rajatgoyal.popularmovies_stage2.DisplayActivity">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -13,9 +13,13 @@
 
         <LinearLayout
             android:id="@+id/ll_content"
-            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:paddingBottom="8dp"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:paddingTop="8dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -27,7 +31,8 @@
                     android:layout_width="0dp"
                     android:layout_height="240dp"
                     android:layout_weight="2"
-                    android:scaleType="fitXY" />
+                    android:scaleType="fitXY"
+                    tools:src="@drawable/minions" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -35,10 +40,17 @@
                     android:layout_weight="3"
                     android:gravity="center_vertical"
                     android:orientation="vertical"
-                    android:paddingBottom="8dp"
                     android:paddingLeft="8dp"
-                    android:paddingRight="8dp"
-                    android:paddingTop="8dp">
+                    android:paddingRight="8dp">
+
+                    <ToggleButton
+                        android:id="@+id/favorite_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@android:color/transparent"
+                        android:button="@android:drawable/btn_star"
+                        android:textOff=""
+                        android:textOn="" />
 
                     <TextView
                         android:id="@+id/tv_title"
@@ -47,7 +59,8 @@
                         android:layout_weight="1"
                         android:gravity="center_vertical"
                         android:textColor="#000"
-                        android:textSize="28sp" />
+                        android:textSize="28sp"
+                        tools:text="Minions" />
 
                     <TextView
                         android:id="@+id/tv_release_date"
@@ -55,7 +68,8 @@
                         android:layout_height="wrap_content"
                         android:gravity="center_vertical"
                         android:textColor="#000"
-                        android:textSize="20sp" />
+                        android:textSize="20sp"
+                        tools:text="2017-09-05" />
 
                     <TextView
                         android:id="@+id/tv_duration"
@@ -63,7 +77,8 @@
                         android:layout_height="wrap_content"
                         android:gravity="center_vertical"
                         android:textColor="#000"
-                        android:textSize="20sp" />
+                        android:textSize="20sp"
+                        tools:text="120 minutes" />
 
                     <TextView
                         android:id="@+id/tv_rating"
@@ -71,7 +86,8 @@
                         android:layout_height="wrap_content"
                         android:gravity="center_vertical"
                         android:textColor="#000"
-                        android:textSize="20sp" />
+                        android:textSize="20sp"
+                        tools:text="6.8/10" />
 
                 </LinearLayout>
 
@@ -84,9 +100,76 @@
                 android:layout_marginLeft="8dp"
                 android:layout_marginRight="8dp"
                 android:layout_marginTop="18dp"
-                android:layout_marginBottom="18dp"
                 android:textColor="#000"
+                android:textSize="20sp"
+                tools:text="@string/test_overview" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="18dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginTop="18dp"
+                android:background="@color/black" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="8dp"
+                    android:text="@string/trailer_label"
+                    android:textColor="@color/black"
+                    android:textSize="20sp" />
+
+                <ImageButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/transparent"
+                    android:onClick="playTrailer"
+                    android:src="@drawable/ic_play_arrow_black_24dp" />
+
+                <ImageButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="8dp"
+                    android:background="@android:color/transparent"
+                    android:onClick="shareTrailer"
+                    android:src="@drawable/ic_share_black_24dp" />
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="18dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginTop="18dp"
+                android:background="@color/black" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:text="@string/reviews_label"
+                android:textColor="@color/black"
                 android:textSize="20sp" />
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/reviews_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="18dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginTop="18dp" />
 
         </LinearLayout>
 
