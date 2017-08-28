@@ -24,6 +24,10 @@
             <meta-data android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity" />
         </activity>
+        <provider
+            android:authorities="com.rajatgoyal.popularmovies_stage2"
+            android:name="com.rajatgoyal.popularmovies_stage2.data.MovieContentProvider"
+            android:exported="false" />
     </application>
 
 </manifest>

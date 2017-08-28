@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import com.rajatgoyal.popularmovies_stage2.model.Movie;
 import com.squareup.picasso.Picasso;
 
+
 /**
  * Created by rajat on 27/8/17.
  */
@@ -39,7 +40,8 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MovieViewH
 
     @Override
     public void onBindViewHolder(MovieViewHolder holder, int position) {
-        Picasso.with(context).load(moviesList[position].getPoster_path()).into(holder.posterImageView);
+        String posterPath = moviesList[position].getPoster_path();
+        Picasso.with(context).load("http://image.tmdb.org/t/p/w185/" + posterPath).into(holder.posterImageView);
     }
 
     @Override
@@ -56,7 +58,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MovieViewH
         return moviesList;
     }
 
-    class MovieViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    class MovieViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         ImageView posterImageView;
 

@@ -3,6 +3,7 @@ package com.rajatgoyal.popularmovies_stage2;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -21,6 +22,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.rajatgoyal.popularmovies_stage2.data.MovieContract;
 import com.rajatgoyal.popularmovies_stage2.model.Movie;
 
 import org.json.JSONArray;
@@ -29,12 +31,6 @@ import org.json.JSONObject;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-
-// TODO You’ll allow users to view and play trailers ( either in the youtube app or a web browser).
-// TODO You’ll allow users to read reviews of a selected movie.
-// TODO You’ll also allow users to mark a movie as a favorite in the details view by tapping a button(star).
-// TODO You'll create a database and content provider to store the names and ids of the user's favorite movies (and optionally, the rest of the information needed to display their favorites collection while offline).
-// TODO You’ll modify the existing sorting criteria for the main view to include an additional pivot to show their favorites collection.
 
 public class MainActivity extends AppCompatActivity implements MoviesAdapter.MovieItemClickListener {
 
@@ -55,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
 
     public static final String TAG = "MainActivity";
 
-    // 0 for popular movies and 1 for top rated movies
+    // 0 for popular movies and 1 for top rated movies and 2 for favourites
     private static int POPULAR_OR_TOP_RATED;
 
     private static SharedPreferences sharedPref;
@@ -96,18 +92,62 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
         Context context = MainActivity.this;
         sharedPref = context.getSharedPreferences(MY_PREFS, Context.MODE_PRIVATE);
 
-        POPULAR_OR_TOP_RATED = sharedPref.getInt("choice", -1);
+        POPULAR_OR_TOP_RATED = sharedPref.getInt("choice", 0);
     }
 
     private void loadMoviesData() {
 
         showLoadingIndicator();
 
-        if (POPULAR_OR_TOP_RATED != -1) {
+        if (POPULAR_OR_TOP_RATED != 2) {
             URL moviesUrl = buildUrl();
             new MoviesFetchTask().execute(moviesUrl);
         } else {
-            // query the database for favourites
+            new FavouriteMoviesFetchTask().execute();
+        }
+    }
+
+    public class FavouriteMoviesFetchTask extends AsyncTask<Void, Void, Void> {
+
+        Movie[] movies;
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            Uri uri = MovieContract.MovieEntry.CONTENT_URI;
+            Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+            Log.d(TAG, "doInBackground: cursor: " + cursor.getCount());
+
+            int count = cursor.getCount();
+            movies = new Movie[cursor.getCount()];
+            if (count == 0) {
+                return null;
+            }
+
+            if (cursor.moveToFirst()) {
+                do {
+                    int movie_id = cursor.getInt(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_MOVIE_ID));
+                    String name = cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_NAME));
+                    String poster_path = cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_POSTER_PATH));
+
+                    Log.d(TAG, "doInBackground: " + name + " and " + poster_path);
+
+                    movies[cursor.getPosition()] = new Movie(movie_id, poster_path);
+                } while (cursor.moveToNext());
+            }
+
+            cursor.close();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+            mMoviesAdapter.setMovieData(movies);
+            mMoviesAdapter.notifyDataSetChanged();
+            showMoviesData();
+
+            rv_movies.scrollToPosition(0);
         }
     }
 
@@ -182,6 +222,8 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
                                     mMoviesAdapter.notifyDataSetChanged();
                                     showMoviesData();
 
+                                    rv_movies.scrollToPosition(0);
+
                                 } catch (JSONException e) {
                                     e.printStackTrace();
                                 }
@@ -212,11 +254,14 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
 
         MenuItem popularMenuItem = menu.findItem(R.id.action_popular);
         MenuItem topRatedMenuItem = menu.findItem(R.id.action_top_rated);
+        MenuItem favoriteMenuItem = menu.findItem(R.id.action_favourites);
 
         if (POPULAR_OR_TOP_RATED == 0) {
             popularMenuItem.setChecked(true);
-        } else {
+        } else if (POPULAR_OR_TOP_RATED == 1) {
             topRatedMenuItem.setChecked(true);
+        } else {
+            favoriteMenuItem.setChecked(true);
         }
 
         return true;
@@ -240,7 +285,7 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
 
         if (id == R.id.action_favourites) {
             item.setChecked(true);
-            POPULAR_OR_TOP_RATED = -1;
+            POPULAR_OR_TOP_RATED = 2;
         }
 
         updateSharedPref();

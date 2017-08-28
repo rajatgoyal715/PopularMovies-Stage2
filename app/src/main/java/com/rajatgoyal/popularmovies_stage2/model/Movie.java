@@ -9,11 +9,8 @@ public class Movie {
     private String poster_path;
 
     public Movie(int id, String poster_path) {
-
         this.id = id;
-
-        String POSTER_BASE_URL = "http://image.tmdb.org/t/p/w185/";
-        this.poster_path = POSTER_BASE_URL + poster_path;
+        this.poster_path = poster_path;
     }
 
     public int getId() {

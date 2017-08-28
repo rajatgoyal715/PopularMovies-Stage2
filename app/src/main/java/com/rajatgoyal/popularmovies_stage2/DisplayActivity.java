@@ -1,7 +1,9 @@
 package com.rajatgoyal.popularmovies_stage2;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -15,6 +17,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -24,6 +27,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.rajatgoyal.popularmovies_stage2.data.MovieContract;
 import com.rajatgoyal.popularmovies_stage2.model.Review;
 import com.squareup.picasso.Picasso;
 
@@ -43,7 +47,7 @@ public class DisplayActivity extends AppCompatActivity {
     private ReviewsAdapter mReviewsAdapter;
 
     public static int MOVIE_ID;
-    public static String TRAILER_LINK;
+    public static String TRAILER_LINK, POSTER_PATH;
     public static Review[] reviews;
 
     public static final String YOUTUBE_BASE_URL = "https://www.youtube.com/watch?v=";
@@ -73,10 +77,13 @@ public class DisplayActivity extends AppCompatActivity {
         Intent intent = getIntent();
 
         MOVIE_ID = intent.getIntExtra("id", 211672);
+        POSTER_PATH = intent.getStringExtra("poster_path");
         TRAILER_LINK = null;
 
-        boolean isFavorite = intent.getBooleanExtra("favorite", false);
-        mFavoriteButton.setChecked(isFavorite);
+//        boolean isFavorite = intent.getBooleanExtra("favorite", false);
+//        mFavoriteButton.setChecked(isFavorite);
+
+        checkIfFavourite();
 
         mReviewsList = (RecyclerView) findViewById(R.id.reviews_list);
         mReviewsList.setLayoutManager(new LinearLayoutManager(this));
@@ -93,6 +100,66 @@ public class DisplayActivity extends AppCompatActivity {
             loadMovieData();
             loadTrailerData();
             loadReviewData();
+        }
+    }
+
+    public void checkIfFavourite() {
+        Uri uri = Uri.parse(MovieContract.MovieEntry.CONTENT_URI + "/" + Integer.toString(MOVIE_ID));
+        Cursor cursor = getContentResolver().query(uri,
+                null,
+                null,
+                null,
+                null);
+        if (!cursor.moveToNext()) {
+            mFavoriteButton.setChecked(false);
+        } else {
+            mFavoriteButton.setChecked(true);
+        }
+    }
+
+    public void toggleFavourite(View view) {
+        ToggleButton favoriteButton = (ToggleButton) view;
+        boolean isChecked = favoriteButton.isChecked();
+
+        if (isChecked) {
+            addMovie();
+        } else {
+            deleteMovie();
+        }
+    }
+
+    public void addMovie() {
+        int id = MOVIE_ID;
+        String name = mTitle.getText().toString();
+        String release_date = mReleaseDate.getText().toString();
+        String duration = mReleaseDate.getText().toString();
+        String rating = mRating.getText().toString();
+        String overview = mOverview.getText().toString();
+        String poster_path = POSTER_PATH;
+
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(MovieContract.MovieEntry.COLUMN_MOVIE_ID, id);
+        contentValues.put(MovieContract.MovieEntry.COLUMN_NAME, name);
+        contentValues.put(MovieContract.MovieEntry.COLUMN_RELEASE_DATE, release_date);
+        contentValues.put(MovieContract.MovieEntry.COLUMN_DURATION, duration);
+        contentValues.put(MovieContract.MovieEntry.COLUMN_RATING, rating);
+        contentValues.put(MovieContract.MovieEntry.COLUMN_OVERVIEW, overview);
+        contentValues.put(MovieContract.MovieEntry.COLUMN_POSTER_PATH, poster_path);
+
+        Uri uri = getContentResolver().insert(MovieContract.MovieEntry.CONTENT_URI, contentValues);
+        if (uri != null) {
+            Toast.makeText(this, "Added to favourites", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void deleteMovie() {
+        int id = MOVIE_ID;
+        String stringId = Integer.toString(id);
+        Uri uri = MovieContract.MovieEntry.CONTENT_URI;
+        uri = uri.buildUpon().appendPath(stringId).build();
+        int movieDeleted = getContentResolver().delete(uri, null, null);
+        if (movieDeleted == 1) {
+            Toast.makeText(this, "Removed from favourites", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -130,10 +197,8 @@ public class DisplayActivity extends AppCompatActivity {
     }
 
     public void loadMovieData() {
-
         String url = buildUrl();
         new MovieDataFetchTask().execute(url);
-
     }
 
     public void storeMovieData(String title, String overview, String release_date, String rating, String poster_path, int duration) {
@@ -145,7 +210,8 @@ public class DisplayActivity extends AppCompatActivity {
         String runtime = String.valueOf(duration) + " minutes";
         mDuration.setText(runtime);
 
-        String full_poster_path = POSTER_BASE_URL + poster_path;
+        POSTER_PATH = poster_path;
+        String full_poster_path = POSTER_BASE_URL + POSTER_PATH;
         Picasso.with(DisplayActivity.this).load(full_poster_path).into(mPoster);
 
         showContent();
@@ -314,6 +380,13 @@ public class DisplayActivity extends AppCompatActivity {
             }
 
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            ScrollView scrollView = (ScrollView) findViewById(R.id.scroll_view);
+            scrollView.smoothScrollTo(0, 0);
         }
     }
 
