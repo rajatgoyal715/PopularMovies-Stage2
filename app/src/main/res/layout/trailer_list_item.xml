@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
+    android:paddingTop="10dp">
+
+    <TextView
+        android:id="@+id/trailer_name_text_view"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:text="Official Trailer 1"
+        android:textColor="@color/black"
+        android:textSize="20sp" />
+
+    <ImageButton
+        android:id="@+id/playButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:onClick="playTrailer"
+        android:src="@drawable/ic_play_arrow_black_24dp" />
+
+    <ImageButton
+        android:id="@+id/shareButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:background="@android:color/transparent"
+        android:onClick="shareTrailer"
+        android:src="@drawable/ic_share_black_24dp" />
+
+</LinearLayout>

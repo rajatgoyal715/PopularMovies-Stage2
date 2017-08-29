@@ -6,7 +6,7 @@
 
     <string name="test_overview">This movie is the best.</string>
 
-    <string name="trailer_label">Movie Trailer</string>
+    <string name="trailers_label">Trailers</string>
     <string name="reviews_label">Reviews</string>
 
     <string name="api_key">Place your api key here</string>

@@ -29,6 +29,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.rajatgoyal.popularmovies_stage2.data.MovieContract;
 import com.rajatgoyal.popularmovies_stage2.model.Review;
+import com.rajatgoyal.popularmovies_stage2.model.Trailer;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -43,15 +44,20 @@ public class DisplayActivity extends AppCompatActivity {
     private TextView mErrorMessage;
     private LinearLayout mContent;
     private ToggleButton mFavoriteButton;
+
     private RecyclerView mReviewsList;
     private ReviewsAdapter mReviewsAdapter;
 
+    private RecyclerView mTrailersList;
+    private TrailersAdapter mTrailersAdapter;
+
     public static int MOVIE_ID;
-    public static String TRAILER_LINK, POSTER_PATH;
+    public static String POSTER_PATH;
+
     public static Review[] reviews;
+    public static Trailer[] trailers;
 
     public static final String YOUTUBE_BASE_URL = "https://www.youtube.com/watch?v=";
-
     public static final String MOVIE_DETAIL_BASE_URL = "https://api.themoviedb.org/3/movie/";
     public static final String POSTER_BASE_URL = "http://image.tmdb.org/t/p/w185/";
 
@@ -78,10 +84,6 @@ public class DisplayActivity extends AppCompatActivity {
 
         MOVIE_ID = intent.getIntExtra("id", 211672);
         POSTER_PATH = intent.getStringExtra("poster_path");
-        TRAILER_LINK = null;
-
-//        boolean isFavorite = intent.getBooleanExtra("favorite", false);
-//        mFavoriteButton.setChecked(isFavorite);
 
         checkIfFavourite();
 
@@ -92,6 +94,14 @@ public class DisplayActivity extends AppCompatActivity {
         mReviewsAdapter.setReviewsList(reviews);
 
         mReviewsList.setAdapter(mReviewsAdapter);
+
+        mTrailersList = (RecyclerView) findViewById(R.id.trailers_list);
+        mTrailersList.setLayoutManager(new LinearLayoutManager(this));
+
+        mTrailersAdapter = new TrailersAdapter(this);
+        mTrailersAdapter.setTrailersList(trailers);
+
+        mTrailersList.setAdapter(mTrailersAdapter);
 
         if (!isOnline()) {
             showErrorMessage();
@@ -201,7 +211,8 @@ public class DisplayActivity extends AppCompatActivity {
         new MovieDataFetchTask().execute(url);
     }
 
-    public void storeMovieData(String title, String overview, String release_date, String rating, String poster_path, int duration) {
+    public void storeMovieData(String title, String overview, String release_date, String rating,
+                               String poster_path, int duration) {
         mTitle.setText(title);
         mOverview.setText(overview);
         mReleaseDate.setText(release_date);
@@ -269,7 +280,7 @@ public class DisplayActivity extends AppCompatActivity {
 
     public void loadTrailerData() {
         String url = buildTrailerFetchUrl();
-        new TrailerFetchTask().execute(url);
+        new TrailersFetchTask().execute(url);
     }
 
     public String buildTrailerFetchUrl() {
@@ -280,7 +291,7 @@ public class DisplayActivity extends AppCompatActivity {
         return builtUri.toString();
     }
 
-    private class TrailerFetchTask extends AsyncTask<String, Void, Void> {
+    private class TrailersFetchTask extends AsyncTask<String, Void, Void> {
 
         @Override
         protected Void doInBackground(String... params) {
@@ -298,7 +309,18 @@ public class DisplayActivity extends AppCompatActivity {
                             public void onResponse(JSONObject response) {
                                 try {
                                     JSONArray results = response.getJSONArray("results");
-                                    TRAILER_LINK = YOUTUBE_BASE_URL + results.getJSONObject(0).getString("key");
+
+                                    int length = results.length();
+                                    Trailer[] trailers = new Trailer[length];
+
+                                    for (int i = 0; i < length; i++) {
+                                        String key = results.getJSONObject(i).getString("key");
+                                        String name = results.getJSONObject(i).getString("name");
+                                        trailers[i] = new Trailer(key, name);
+                                    }
+
+                                    mTrailersAdapter.setTrailersList(trailers);
+                                    mTrailersAdapter.notifyDataSetChanged();
                                 } catch (JSONException e) {
                                     e.printStackTrace();
                                 }
@@ -368,7 +390,7 @@ public class DisplayActivity extends AppCompatActivity {
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Toast.makeText(DisplayActivity.this, "error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+//                                Toast.makeText(DisplayActivity.this, "error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
                             }
                         }
                 );
@@ -390,33 +412,11 @@ public class DisplayActivity extends AppCompatActivity {
         }
     }
 
-    public void playTrailer(View view) {
-        if (TRAILER_LINK != null) {
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(TRAILER_LINK));
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            intent.setPackage("com.google.android.youtube");
-            startActivity(intent);
-        } else {
-            loadTrailerData();
-        }
-    }
-
-    public void shareTrailer(View view) {
-        if (TRAILER_LINK != null) {
-            ShareCompat.IntentBuilder.from(this)
-                    .setChooserTitle("Share with..")
-                    .setText(TRAILER_LINK)
-                    .setType("text/plain")
-                    .startChooser();
-        } else {
-            loadTrailerData();
-        }
-    }
-
     @Override
     protected void onPause() {
         super.onPause();
         reviews = mReviewsAdapter.getReviewsList();
+        trailers = mTrailersAdapter.getTrailersList();
     }
 
     @Override
@@ -424,5 +424,13 @@ public class DisplayActivity extends AppCompatActivity {
         super.onResume();
         mReviewsAdapter.setReviewsList(reviews);
         mReviewsAdapter.notifyDataSetChanged();
+
+        mTrailersAdapter.setTrailersList(trailers);
+        mTrailersAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
     }
 }

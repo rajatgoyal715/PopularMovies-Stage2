@@ -7,6 +7,8 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcelable;
+import android.os.PersistableBundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -15,6 +17,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -36,6 +39,7 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
 
     private RecyclerView rv_movies;
     private MoviesAdapter mMoviesAdapter;
+    private GridLayoutManager layoutManager;
 
     private ProgressBar mProgressLoading;
 
@@ -60,6 +64,8 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
 
     public static Movie[] moviesList;
 
+    Parcelable mListState;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,21 +77,36 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
 
         rv_movies = (RecyclerView) findViewById(R.id.rv_movies);
 
-        GridLayoutManager layoutManager = new GridLayoutManager(this, 2);
+        layoutManager = new GridLayoutManager(this, 2);
         rv_movies.setLayoutManager(layoutManager);
 
         mMoviesAdapter = new MoviesAdapter(this);
-        mMoviesAdapter.setMovieData(moviesList);
         rv_movies.setAdapter(mMoviesAdapter);
 
-        loadMoviesData();
-    }
+        if (savedInstanceState == null) {
 
-    @Override
-    public void onClick(int id) {
-        Intent intent = new Intent(this, DisplayActivity.class);
-        intent.putExtra("id", id);
-        startActivity(intent);
+            loadMoviesData();
+
+        } else {
+
+            int ids[] = savedInstanceState.getIntArray("id");
+            String posters[] = savedInstanceState.getStringArray("poster");
+
+            moviesList = new Movie[ids.length];
+            for (int i = 0; i < ids.length; i++) {
+                Log.d(TAG, "onCreate: " + ids[i] + " and " + posters[i]);
+                moviesList[i] = new Movie(ids[i], posters[i]);
+            }
+
+            mMoviesAdapter.setMovieData(moviesList);
+            mMoviesAdapter.notifyDataSetChanged();
+            showMoviesData();
+
+            mListState = savedInstanceState.getParcelable("position");
+            if (mListState != null) {
+                layoutManager.onRestoreInstanceState(mListState);
+            }
+        }
     }
 
     public void getChoice() {
@@ -93,6 +114,13 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
         sharedPref = context.getSharedPreferences(MY_PREFS, Context.MODE_PRIVATE);
 
         POPULAR_OR_TOP_RATED = sharedPref.getInt("choice", 0);
+    }
+
+    @Override
+    public void onClick(int id) {
+        Intent intent = new Intent(this, DisplayActivity.class);
+        intent.putExtra("id", id);
+        startActivity(intent);
     }
 
     private void loadMoviesData() {
@@ -146,8 +174,6 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
             mMoviesAdapter.setMovieData(movies);
             mMoviesAdapter.notifyDataSetChanged();
             showMoviesData();
-
-            rv_movies.scrollToPosition(0);
         }
     }
 
@@ -303,15 +329,20 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
     }
 
     @Override
-    protected void onPause() {
-        moviesList = mMoviesAdapter.getMovieData();
-        super.onPause();
-    }
+    protected void onSaveInstanceState(Bundle outState) {
+        mListState = layoutManager.onSaveInstanceState();
+        outState.putParcelable("position", mListState);
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        mMoviesAdapter.setMovieData(moviesList);
-        mMoviesAdapter.notifyDataSetChanged();
+        moviesList = mMoviesAdapter.getMovieData();
+        int[] moviesId = new int[moviesList.length];
+        String[] moviesPosters = new String[moviesList.length];
+        for (int i = 0; i < moviesList.length; i++) {
+            moviesId[i] = moviesList[i].getId();
+            moviesPosters[i] = moviesList[i].getPoster_path();
+        }
+        outState.putIntArray("id", moviesId);
+        outState.putStringArray("poster", moviesPosters);
+
+        super.onSaveInstanceState(outState);
     }
 }

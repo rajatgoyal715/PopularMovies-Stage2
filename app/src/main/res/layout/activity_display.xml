@@ -114,36 +114,23 @@
                 android:layout_marginTop="18dp"
                 android:background="@color/black" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
+            <TextView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical">
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:text="@string/trailers_label"
+                android:textColor="@color/black"
+                android:textSize="20sp" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="8dp"
-                    android:layout_marginRight="8dp"
-                    android:text="@string/trailer_label"
-                    android:textColor="@color/black"
-                    android:textSize="20sp" />
-
-                <ImageButton
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@android:color/transparent"
-                    android:onClick="playTrailer"
-                    android:src="@drawable/ic_play_arrow_black_24dp" />
-
-                <ImageButton
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="8dp"
-                    android:background="@android:color/transparent"
-                    android:onClick="shareTrailer"
-                    android:src="@drawable/ic_share_black_24dp" />
-
-            </LinearLayout>
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/trailers_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="18dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginTop="18dp" />
 
             <View
                 android:layout_width="match_parent"
